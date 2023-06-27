@@ -13,10 +13,7 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\DB;
-use App\Libraries\Adb\Src\Functions as AdbFunc;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\JsonResponse;
 
 /**
  * OTP Generator class
@@ -24,32 +21,39 @@ use Illuminate\Support\Facades\Mail;
  * This class contains functions to generate one time password
  *
  */
-
 class ResponseHelper
 {
-    public static function skeleton()
+    /**
+     * @return object
+     */
+    public static function skeleton(): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
-            "data" => (object) [],
-            "debug" => (object) []
+            "data" => (object)[],
+            "debug" => (object)[]
         ];
     }
 
-    public static function format($config = null, $status = false)
+    /**
+     * @param $config
+     * @param bool $status
+     * @return object
+     */
+    public static function format($config = null, bool $status = false): object
     {
-        $config = ($config) ? (object) $config : (object) [];
-        $data = (object) [
-            "status" => (isset($config->status)) ? $config->status : $status,
-            "data" => (isset($config->data) && !empty($config->data)) ? $config->data : null,
-            "response" => (isset($config->msg)) ? $config->msg : __('custom.default_response'),
-            "code" => (isset($config->code)) ? $config->code : 200,
-            "debug" => (isset($config->debug) && !empty($config->debug)) ? $config->debug : null
+        $config = ($config) ? (object)$config : (object)[];
+        $data = (object)[
+            "status" => $config->status ?? $status,
+            "data" => (!empty($config->data)) ? $config->data : null,
+            "response" => $config->msg ?? __('custom.default_response'),
+            "code" => $config->code ?? 200,
+            "debug" => (!empty($config->debug)) ? $config->debug : null
         ];
 
-        return (object) [
-            "status"    => $data->status,
-            "meta_data" => (object) [
+        return (object)[
+            "status" => $data->status,
+            "meta_data" => (object)[
                 "data" => $data->data,
                 "response" => $data->response,
                 "status_code" => $data->code
@@ -58,76 +62,120 @@ class ResponseHelper
         ];
     }
 
-    public static function formatted_response($config = null){
-        $formatted =  self::format($config);
+    /**
+     * @param $config
+     * @return JsonResponse
+     */
+    public static function formatted_response($config = null): JsonResponse
+    {
+        $formatted = self::format($config);
         return response()->json($formatted, $formatted->meta_data->status_code);
     }
 
-    public static function jsonResponse($msg, int $code = 400, $data = [], $status = false) {
+    /**
+     * @param $msg
+     * @param int $code
+     * @param mixed $data
+     * @param bool $status
+     * @return JsonResponse
+     */
+    public static function jsonResponse($msg, int $code = 400, mixed $data = [], bool $status = false): JsonResponse
+    {
         $response = self::format([
-            "msg"=> $msg, "code"=> $code, "data"=> $data
+            "msg" => $msg, "code" => $code, "data" => $data
         ], $status);
 
         return response()->json($response, $code);
     }
 
-    public static function default_failure_response($msg = false)
+    /**
+     * @param bool $msg
+     * @return object
+     */
+    public static function default_failure_response(bool $msg = false): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
             "code" => 500,
-            "msg" => ($msg) ? $msg : __('custom.default')
+            "msg" => ($msg) ?: __('custom.default')
         ];
     }
 
-    public static function method_error_response($msg = false)
+    /**
+     * @param bool $msg
+     * @return object
+     */
+    public static function method_error_response(bool $msg = false): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
             "code" => 405,
-            "msg" => ($msg) ? $msg : __('custom.invalid_request_method')
+            "msg" => ($msg) ?: __('custom.invalid_request_method')
         ];
     }
 
-    public static function value_error_response($msg = false)
+    /**
+     * @param bool $msg
+     * @return object
+     */
+    public static function value_error_response(bool $msg = false): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
             "code" => 403,
-            "msg" => ($msg) ? $msg : __('custom.invalid_values')
+            "msg" => ($msg) ?: __('custom.invalid_values')
         ];
     }
 
-    public static function unauthorized_response($msg = false)
+    /**
+     * @param bool $msg
+     * @return object
+     */
+    public static function unauthorized_response(bool $msg = false): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
             "code" => 401,
-            "msg" => ($msg) ? $msg : __('custom.unauthorized')
+            "msg" => ($msg) ?: __('custom.unauthorized')
         ];
     }
 
-    public static function bad_request_error_response($msg = false, $debug = null)
+    /**
+     * @param bool $msg
+     * @param $debug
+     * @return object
+     */
+    public static function bad_request_error_response(bool $msg = false, $debug = null): object
     {
-        return (object) [
+        return (object)[
             "status" => false,
             "code" => 400,
-            "msg" => ($msg) ? $msg : __('custom.bad_request'),
+            "msg" => ($msg) ?: __('custom.bad_request'),
             "debug" => $debug
         ];
     }
 
-    public static function success_response($msg = false, $data = null)
+    /**
+     * @param bool $msg
+     * @param $data
+     * @return object
+     */
+    public static function success_response(bool $msg = false, $data = null): object
     {
-        return (object) [
+        return (object)[
             "status" => true,
             "code" => 200,
             "data" => $data,
-            "msg" => ($msg) ? $msg : "Request Successful"
+            "msg" => ($msg) ?: "Request Successful"
         ];
     }
 
-    public static function token_response($token, $data)
+    /**
+     * @param $token
+     * @param $data
+     * @return JsonResponse
+     */
+    public static function token_response($token, $data): JsonResponse
     {
         return response()->json([
             'access_token' => $token,
@@ -135,7 +183,12 @@ class ResponseHelper
         ], 200);
     }
 
-    public static function serverError($error, int $code = 500)
+    /**
+     * @param $error
+     * @param int $code
+     * @return JsonResponse
+     */
+    public static function serverError($error, int $code = 500): JsonResponse
     {
         return response()->json([
             "status" => false,
@@ -148,7 +201,12 @@ class ResponseHelper
         ], $code);
     }
 
-    public static function clientError($response, int $code = 400)
+    /**
+     * @param $response
+     * @param int $code
+     * @return JsonResponse
+     */
+    public static function clientError($response, int $code = 400): JsonResponse
     {
         return response()->json([
             "status" => false,

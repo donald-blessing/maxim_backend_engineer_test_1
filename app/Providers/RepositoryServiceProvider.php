@@ -20,6 +20,9 @@ class RepositoryServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->bind(\App\Repositories\UserRepository::class, \App\Repositories\UserRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\Interfaces\MovieRepository::class, \App\Repositories\MovieRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\Interfaces\CommentRepository::class, \App\Repositories\CommentRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\Interfaces\MovieCharacterRepository::class, \App\Repositories\MovieCharacterRepositoryEloquent::class);
         //:end-bindings:
     }
 }
